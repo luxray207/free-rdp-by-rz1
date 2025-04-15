@@ -7,13 +7,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Setup Docker
-      uses: docker/setup-buildx-action@v2
-
-    - name: Install Docker
+    - name: Install Chocolatey
       run: |
-        docker --version
-        docker info
+        Set-ExecutionPolicy Bypass -Scope Process -Force;
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    - name: Install LocalXpose using Chocolatey
+      run: choco install localxpose
+
+    - name: Verify LocalXpose Installation
+      run: loclx --version
 
     - name: Enable RDP
       run: |
@@ -22,12 +26,5 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-    - name: Run LocalXpose Tunnel with Docker
-      run: |
-        docker pull localxpose/localxpose:latest
-        docker run -d --name loclx -e LOCLX_TOKEN=${{ secrets.LOCALXPOSE_TOKEN }} localxpose/localxpose:latest tcp 3389
-      env:
-        LOCLX_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
-
-    - name: Verify LocalXpose Tunnel
-      run: docker ps
+    - name: Start LocalXpose Tunnel
+      run: loclx tcp 3389
