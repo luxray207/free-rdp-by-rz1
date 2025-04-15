@@ -7,21 +7,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-
-    - name: Install loclx
-      run: npm install -g loclx
-
-    - name: Add npm global binaries to PATH
-      run: |
-        $env:PATH = "$env:PATH;C:\Users\runneradmin\AppData\Roaming\npm"
-        Write-Host "Updated PATH: $env:PATH"
-
-    - name: Verify loclx installation
-      run: loclx --version  # Verifikasi bahwa loclx terinstall dengan benar
+    - name: Setup Docker
+      uses: docker/setup-buildx-action@v2
 
     - name: Enable RDP
       run: |
@@ -30,7 +17,12 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-    - name: Start LocalXpose Tunnel
-      run: loclx tcp 3389 --token ${{ secrets.LOCALXPOSE_TOKEN }}
+    - name: Run LocalXpose Tunnel with Docker
+      run: |
+        docker pull localxpose/localxpose:latest
+        docker run -d --name loclx -e LOCLX_TOKEN=${{ secrets.LOCALXPOSE_TOKEN }} localxpose/localxpose:latest tcp 3389
       env:
-        LOCALXPOSE_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
+        LOCLX_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
+
+    - name: Verify LocalXpose Tunnel
+      run: docker ps
