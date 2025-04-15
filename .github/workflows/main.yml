@@ -10,6 +10,11 @@ jobs:
     - name: Setup Docker
       uses: docker/setup-buildx-action@v2
 
+    - name: Install Docker
+      run: |
+        docker --version
+        docker info
+
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
