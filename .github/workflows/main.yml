@@ -1,6 +1,6 @@
-name: RDP with LocalXpose
+name: CI
 
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   build:
@@ -11,15 +11,16 @@ jobs:
       run: Invoke-WebRequest https://localxpose.io/localxpose_windows_amd64.zip -OutFile lx.zip
 
     - name: Extract LocalXpose
-      run: Expand-Archive lx.zip
+      run: Expand-Archive lx.zip -DestinationPath .
 
-    - name: Enable RDP
+    - name: Enable Remote Desktop (RDP)
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-    - name: Start Tunnel
+    - name: Start LocalXpose Tunnel
       run: .\localxpose.exe tunnel tcp --port 3389 --auth-token $Env:LX_TOKEN
       env:
         LX_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
