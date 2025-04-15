@@ -7,13 +7,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Download LocalXpose
-      run: Invoke-WebRequest https://localxpose.io/localxpose_windows_amd64.zip -OutFile lx.zip
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Tentukan versi Node.js yang sesuai
 
-    - name: Extract LocalXpose
-      run: Expand-Archive lx.zip -DestinationPath .
+    - name: Install loclx
+      run: npm install -g loclx
 
-    - name: Enable Remote Desktop (RDP)
+    - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
@@ -21,6 +23,6 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
     - name: Start LocalXpose Tunnel
-      run: .\localxpose.exe tunnel tcp --port 3389 --auth-token $Env:LX_TOKEN
+      run: loclx tcp 3389 --token ${{ secrets.LOCALXPOSE_TOKEN }}
       env:
-        LX_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
+        LOCALXPOSE_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
