@@ -10,10 +10,13 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Tentukan versi Node.js yang sesuai
+        node-version: '16'
 
     - name: Install loclx
       run: npm install -g loclx
+
+    - name: Verify loclx installation
+      run: loclx --version  # Verifikasi bahwa loclx terinstall dengan benar
 
     - name: Enable RDP
       run: |
