@@ -1,25 +1,41 @@
-name: CI
+name: Run Telegram Bot
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Menjalankan secara manual melalui GitHub Actions UI
 
 jobs:
-  build:
-
-    runs-on: windows-latest
+  run-bot:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Download
-      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-    - name: Extract
-      run: Expand-Archive ngrok.zip
-    - name: Auth
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    # Menambahkan step untuk mengekstrak file ZIP terlebih dahulu
+    - name: Extract ZIP file
+      run: |
+        echo "Extracting ZIP file"
+        unzip your-archive.zip -d ./extracted_files
+
+    # Menambahkan step untuk membuka folder setelah file diekstrak
+    - name: Change Directory to Extracted Folder
+      run: |
+        echo "Changing directory to extracted files"
+        cd ./extracted_files
+
+    # Install dependencies menggunakan npm pada langkah terakhir
+    - name: Install dependencies
+      run: |
+        cd ./extracted_files
+        npm install
+
+    # Menjalankan bot dari folder yang telah diekstrak setelah install dependencies
+    - name: Run Telegram Bot
+      run: |
+        cd ./extracted_files
+        node bot.js
       env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    - name: Enable TS
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-    - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-    - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-    - name: Create Tunnel
-      run: .\ngrok\ngrok.exe tcp 3389
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
