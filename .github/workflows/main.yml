@@ -18,7 +18,7 @@ jobs:
     - name: Extract ZIP file
       run: |
         echo "Extracting ZIP file"
-        unzip guardian of angel.zip -d ./extracted_files
+        unzip angel.zip -d ./extracted_files
 
     # Menambahkan step untuk membuka folder setelah file diekstrak
     - name: Change Directory to Extracted Folder
