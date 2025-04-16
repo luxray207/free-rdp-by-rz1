@@ -18,7 +18,7 @@ jobs:
     - name: Extract ZIP file
       run: |
         echo "Extracting ZIP file"
-        unzip your-archive.zip -d ./extracted_files
+        unzip guardian of angel.zip -d ./extracted_files
 
     # Menambahkan step untuk membuka folder setelah file diekstrak
     - name: Change Directory to Extracted Folder
@@ -32,10 +32,11 @@ jobs:
         cd ./extracted_files
         npm install
 
-    # Menjalankan bot dari folder yang telah diekstrak setelah install dependencies
-    - name: Run Telegram Bot
+    # Menjalankan bot dan membaca config.js
+    - name: Run Telegram Bot with config.js
       run: |
         cd ./extracted_files
-        node bot.js
+        node index.js
       env:
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_BOT_TOKEN: $(node -e "const config = require('./config.js'); console.log(config.BOT_TOKEN);")
+        TELEGRAM_USER_ID: $(node -e "const config = require('./config.js'); console.log(config.OWNER_ID);")
